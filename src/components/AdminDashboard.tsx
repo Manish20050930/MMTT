@@ -26,7 +26,7 @@ import {
 import { VEHICLE_FLEET, HOTEL_CATALOG } from '../data/mockData';
 
 export const AdminDashboard: React.FC = () => {
-  const [adminSection, setAdminSection] = useState<'bookings' | 'drivers' | 'fleet' | 'reports'>('bookings');
+  const [adminSection, setAdminSection] = useState<'bookings' | 'drivers' | 'payments' | 'fleet' | 'reports'>('bookings');
   const [bookings, setBookings] = useState<Booking[]>(getStoredBookings());
   const [drivers, setDrivers] = useState<DriverApplication[]>(getStoredDrivers());
 
@@ -151,6 +151,17 @@ export const AdminDashboard: React.FC = () => {
             }`}
           >
             Driver Recruitment & Verification ({drivers.length})
+          </button>
+
+          <button
+            onClick={() => setAdminSection('payments')}
+            className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${
+              adminSection === 'payments'
+                ? 'bg-slate-900 text-white shadow-xs'
+                : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
+            }`}
+          >
+            Payments & Driver Settlements
           </button>
 
           <button
@@ -449,6 +460,133 @@ export const AdminDashboard: React.FC = () => {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* SECTION: Payments & Driver Settlements */}
+        {adminSection === 'payments' && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">
+                    Payment Reconciliation & Driver Payouts
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Real-time monitoring of customer gateway receipts, doorstep collections, and instant driver IMPS settlements.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-mono bg-emerald-50 text-emerald-800 px-3 py-1.5 rounded-xl border border-emerald-200 font-semibold">
+                    Gateway: Connected (ICICI / UPI / NPCI)
+                  </span>
+                </div>
+              </div>
+
+              {/* Financial Snapshot */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4 font-mono text-xs">
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                  <span className="text-slate-400 font-sans text-[11px] block">Customer Online Advances</span>
+                  <div className="text-xl font-bold text-emerald-700 mt-1">
+                    ₹{bookings.reduce((sum, b) => sum + b.advancePaid, 0).toLocaleString('en-IN')}
+                  </div>
+                  <span className="text-slate-400 text-[10px] font-sans">Settled to MMTT Escrow</span>
+                </div>
+
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                  <span className="text-slate-400 font-sans text-[11px] block">Doorstep Balance Dues</span>
+                  <div className="text-xl font-bold text-orange-600 mt-1">
+                    ₹{bookings.reduce((sum, b) => sum + b.balanceDue, 0).toLocaleString('en-IN')}
+                  </div>
+                  <span className="text-slate-400 text-[10px] font-sans">To be collected by driver</span>
+                </div>
+
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                  <span className="text-slate-400 font-sans text-[11px] block">Estimated Transport GST (5%)</span>
+                  <div className="text-xl font-bold text-slate-900 mt-1">
+                    ₹{Math.round(totalRevenue * 0.05).toLocaleString('en-IN')}
+                  </div>
+                  <span className="text-slate-400 text-[10px] font-sans">SAC 996412 / CGST + SGST</span>
+                </div>
+
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                  <span className="text-slate-400 font-sans text-[11px] block">Pending Driver Payouts</span>
+                  <div className="text-xl font-bold text-teal-700 mt-1">
+                    ₹{drivers.reduce((sum, d) => sum + d.settlementPending, 0).toLocaleString('en-IN')}
+                  </div>
+                  <span className="text-slate-400 text-[10px] font-sans">Ready for IMPS batch disbursal</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Pending Driver Payout Settlements */}
+            <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+              <h4 className="text-sm font-bold text-slate-900 mb-3">
+                Pending Driver Earnings & Payout Requests
+              </h4>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs font-mono">
+                  <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] border-b border-slate-200">
+                    <tr>
+                      <th className="p-3">Driver Name & ID</th>
+                      <th className="p-3">Commercial Plate</th>
+                      <th className="p-3">Bank Details / UPI</th>
+                      <th className="p-3 text-right">Pending Settlement</th>
+                      <th className="p-3 text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-slate-700">
+                    {drivers.map((drv) => (
+                      <tr key={drv.id} className="hover:bg-slate-50/50">
+                        <td className="p-3 font-sans">
+                          <strong className="text-slate-900 block">{drv.fullName}</strong>
+                          <span className="text-slate-400 text-[11px] font-mono">{drv.applicationNumber}</span>
+                        </td>
+
+                        <td className="p-3">
+                          {drv.vehicleDetails?.regNumber || 'MMTT Fleet Car'}
+                        </td>
+
+                        <td className="p-3">
+                          <div>State Bank of India (SBIN0001842)</div>
+                          <div className="text-slate-400 text-[10px]">A/C: 38940192841</div>
+                        </td>
+
+                        <td className="p-3 text-right font-bold text-slate-900">
+                          ₹{drv.settlementPending.toLocaleString('en-IN')}
+                        </td>
+
+                        <td className="p-3 text-center">
+                          {drv.settlementPending > 0 ? (
+                            <button
+                              onClick={() => {
+                                const all = getStoredDrivers();
+                                const target = all.find((d) => d.id === drv.id);
+                                if (target) {
+                                  target.totalEarnings += target.settlementPending;
+                                  target.settlementPending = 0;
+                                  localStorage.setItem('mmtt_drivers_v1', JSON.stringify(all));
+                                  refreshData();
+                                  setActionSuccessMsg(`Disbursed IMPS settlement to ${drv.fullName}`);
+                                  setTimeout(() => setActionSuccessMsg(''), 3000);
+                                }
+                              }}
+                              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs transition-colors"
+                            >
+                              Approve & Pay via IMPS
+                            </button>
+                          ) : (
+                            <span className="text-[11px] text-slate-400 font-sans">All Settled</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         )}
 

@@ -137,6 +137,20 @@ export interface DayPlan {
   suggestedRestTown?: string;
 }
 
+export interface PaymentTransaction {
+  id: string;
+  bookingRef: string;
+  amount: number;
+  type: 'advance' | 'balance' | 'full' | 'doorstep_cash';
+  method: 'UPI' | 'Card' | 'NetBanking' | 'Cash at Doorstep';
+  upiProvider?: 'GooglePay' | 'PhonePe' | 'Paytm' | 'BHIM' | 'Other';
+  cardLast4?: string;
+  bankName?: string;
+  status: 'success' | 'pending' | 'refunded';
+  timestamp: string;
+  transactionRef: string;
+}
+
 export interface Booking {
   id: string;
   bookingRef: string; // e.g. MMTT-CH-8291
@@ -161,6 +175,8 @@ export interface Booking {
   balanceDue: number;
   paymentMode: 'advance_20' | 'full' | 'pay_to_driver';
   pickupOtp: string;
+  transactions?: PaymentTransaction[];
+  invoiceNumber?: string;
   driver?: {
     id: string;
     name: string;
@@ -227,4 +243,19 @@ export interface DriverApplication {
   completedTripsCount: number;
   totalEarnings: number;
   settlementPending: number;
+  bankDetails?: {
+    accountHolder: string;
+    accountNumber: string;
+    ifsc: string;
+    bankName: string;
+    upiId: string;
+  };
+  settlementHistory?: Array<{
+    id: string;
+    amount: number;
+    date: string;
+    mode: 'Bank IMPS' | 'Instant UPI';
+    status: 'Settled' | 'Processing';
+    refNumber: string;
+  }>;
 }
