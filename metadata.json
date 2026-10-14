@@ -1,0 +1,6 @@
+{
+  "name": "Manish Mart Tours and Travels (MMTT)",
+  "description": "Affordable doorstep-to-doorstep private chauffeur travel, custom itineraries, curated hotels, and driver operations from Chennai.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
